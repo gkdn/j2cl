@@ -59,8 +59,3 @@ alias(
     name = "minifier",
     actual = "//tools/java/com/google/j2cl/tools/minifier",
 )
-
-bool_flag(
-    name = "enable_experimental_java11_support",
-    build_setting_default = False,
-)

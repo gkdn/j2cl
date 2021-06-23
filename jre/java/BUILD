@@ -13,15 +13,7 @@ package(
     licenses = ["notice"],  # Apache 2.0
 )
 
-config_setting(
-    name = "experimental_java11_support",
-    flag_values = {
-        "//:enable_experimental_java11_support": "True",
-    },
-)
-
-JRE_JAVAC_VERSION_OPTS = select({
-    ":experimental_java11_support": [
+JRE_JAVAC_VERSION_OPTS = [
         # Remove the system (aka pre Java9 'bootclasspath').
         # We need this to compile JRE otherwise it will result in a split package for JRE sources.
         "--system",
@@ -34,14 +26,7 @@ JRE_JAVAC_VERSION_OPTS = select({
         "11",
         "-target",
         "11",
-    ],
-    "//conditions:default": [
-        "-source",
-        "8",
-        "-target",
-        "8",
-    ],
-})
+]
 
 JRE_JAVAC_OPTS = JRE_JAVAC_VERSION_OPTS + [
     # Avoid log site injection which introduces calls to unsupported APIs
@@ -55,13 +40,7 @@ package_sources(
         "//third_party:gwt_java_emul_internal",
     ],
     excludes = glob(["super-wasm/**"]),
-    super_srcs = select({
-        ":experimental_java11_support": glob(["**/*.java"]),
-        "//conditions:default": glob(
-            ["**/*.java"],
-            exclude = ["module-info.java"],
-        ),
-    }),
+    super_srcs = glob(["**/*.java"]),
 )
 
 package_sources(
@@ -74,18 +53,12 @@ package_sources(
         "java/util/InternalHashCodeMap.java",  # J2WASM AbstractHashMap doesn't need it.
         "java/util/InternalStringMap.java",  # J2WASM AbstractHashMap doesn't need it.
     ],
-    super_srcs = select({
-        ":experimental_java11_support": glob(
+    super_srcs = glob(
             ["**/*.java"],
             exclude = glob(["**/super-wasm/*.java"]) + [
                 "javaemul/internal/LongUtils.java",  # GWT version actually works for WASM in this case.
             ],
         ),
-        "//conditions:default": glob(
-            ["**/*.java"],
-            exclude = ["module-info.java"],
-        ),
-    }),
     super_wasm_srcs = glob(["super-wasm/**/*.java"]),
 )
 
@@ -155,10 +128,7 @@ jdk_system(
     bootclasspath = ":jre_bootclasspath",
 )
 
-JAVA_VERSION = select({
-    ":experimental_java11_support": "11",
-    "//conditions:default": "8",
-})
+JAVA_VERSION = "11"
 
 default_java_toolchain(
     name = "j2cl_java_toolchain",
